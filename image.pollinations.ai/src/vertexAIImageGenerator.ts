@@ -237,7 +237,13 @@ export async function callVertexAIGemini(
             throw violationError;
         }
 
-        // Don't log successful generations anymore - only errors
+        // Log usage metadata from Vertex AI for debugging token counts
+        log("=== VERTEX AI USAGE METADATA ===");
+        log("Raw usage object:", JSON.stringify(result.usage, null, 2));
+        log("candidatesTokenCount:", result.usage?.candidatesTokenCount);
+        log("promptTokenCount:", result.usage?.promptTokenCount);
+        log("totalTokenCount:", result.usage?.totalTokenCount);
+        log("================================");
         
         if (!result.imageData) {
             errorLog("ERROR: No imageData in result from generateImageWithVertexAI - likely content policy violation");
@@ -307,7 +313,12 @@ export async function callVertexAIGemini(
             // Include tracking data for enter service headers
             trackingData: {
                 actualModel: 'nanobanana',
-                usage: result.usage // Vertex AI usage metadata
+                usage: {
+                    // Convert Vertex AI format to unified format
+                    completionImageTokens: result.usage?.candidatesTokenCount || 1,
+                    promptTokenCount: result.usage?.promptTokenCount,
+                    totalTokenCount: result.usage?.totalTokenCount
+                }
             }
         };
 
