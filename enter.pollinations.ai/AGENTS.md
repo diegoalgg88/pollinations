@@ -2,7 +2,24 @@
 
 > Quick reference for testing image and text models via **enter.pollinations.ai**
 
-> ⚠️ **Note**: The current endpoint structure (`/api/generate/image/*`, `/api/generate/openai`, `/api/generate/text/*`) is transitional and will be simplified in future releases.
+> ⚠️ **Note**: The current endpoint structure (`/api/generate/image/*`, `/api/generate/v1/*`, `/api/generate/text/*`) is transitional and will be simplified in future releases.
+
+---
+
+## 📍 Quick Reference
+
+### Endpoints
+- **Image:** `GET /api/generate/image/{prompt}?model=flux`
+- **Text (OpenAI):** `POST /api/generate/v1/chat/completions` with JSON body
+- **Text (Simple):** `GET /api/generate/text/{prompt}?model=openai`
+
+### Authentication
+- Header: `Authorization: Bearer YOUR_API_KEY`
+- Query: `?key=YOUR_API_KEY`
+
+### Model Discovery
+- **Image models:** `/api/generate/image/models`
+- **Text models:** `/api/generate/v1/models`
 
 ---
 
@@ -150,14 +167,14 @@ echo "All images generated!"
 ### 📋 List Available Models
 
 ```bash
-curl "$BASE_URL/generate/openai/models" \
+curl "$BASE_URL/generate/v1/models" \
   -H "Authorization: Bearer $TOKEN"
 ```
 
 ### 🚀 Basic Request (OpenAI-compatible)
 
 ```bash
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -182,7 +199,7 @@ curl "$BASE_URL/generate/text/test2?key=$TOKEN"
 ### 🌊 Streaming Response
 
 ```bash
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -201,11 +218,11 @@ curl "$BASE_URL/generate/openai" \
 
 ```bash
 # Step 1: Get list of available models
-curl "$BASE_URL/generate/openai/models" \
+curl "$BASE_URL/generate/v1/models" \
   -H "Authorization: Bearer $TOKEN" | jq -r '.data[].id'
 
 # Step 2: Test a specific model (use model names from Step 1)
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "MODEL_NAME", "messages": [{"role": "user", "content": "Test"}]}'
@@ -215,25 +232,25 @@ curl "$BASE_URL/generate/openai" \
 
 ```bash
 # OpenAI (default)
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "openai", "messages": [{"role": "user", "content": "Test"}]}'
 
 # OpenAI Fast
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "openai-fast", "messages": [{"role": "user", "content": "Test"}]}'
 
 # Mistral
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "mistral", "messages": [{"role": "user", "content": "Test"}]}'
 
 # Qwen Coder
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "qwen-coder", "messages": [{"role": "user", "content": "Write Python code"}]}'
@@ -247,7 +264,7 @@ Test multiple text generations simultaneously:
 # Generate 5 responses in parallel
 for i in {1..5}; do
   {
-    curl "$BASE_URL/generate/openai" \
+    curl "$BASE_URL/generate/v1/chat/completions" \
       -H "Authorization: Bearer $TOKEN" \
       -H "Content-Type: application/json" \
       -d "{\"model\": \"openai-fast\", \"messages\": [{\"role\": \"user\", \"content\": \"Test $i\"}]}" \
@@ -268,7 +285,7 @@ echo "All responses generated!"
 
 ```bash
 # Audio output (text-to-speech)
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{
@@ -449,7 +466,7 @@ curl "$BASE_URL/generate/image/models" \
   -H "Authorization: Bearer $TOKEN"
 
 # Get all available text models (returns model IDs)
-curl "$BASE_URL/generate/openai/models" \
+curl "$BASE_URL/generate/v1/models" \
   -H "Authorization: Bearer $TOKEN" | jq -r '.data[].id'
 ```
 
@@ -457,14 +474,14 @@ curl "$BASE_URL/generate/openai/models" \
 
 ```bash
 # 1. Discover available models
-MODELS=$(curl -s "$BASE_URL/generate/openai/models" \
+MODELS=$(curl -s "$BASE_URL/generate/v1/models" \
   -H "Authorization: Bearer $TOKEN" | jq -r '.data[].id')
 
 # 2. Pick a model from the list
 echo "$MODELS"
 
 # 3. Test the model
-curl "$BASE_URL/generate/openai" \
+curl "$BASE_URL/generate/v1/chat/completions" \
   -H "Authorization: Bearer $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"model": "MODEL_FROM_LIST", "messages": [{"role": "user", "content": "Test"}]}'
@@ -484,7 +501,7 @@ curl "$BASE_URL/generate/openai" \
 
 ### Testing Best Practices
 
-- ⚠️ **ALWAYS validate models first**: Use the discovery endpoint (`/generate/openai/models` or `/generate/image/models`) before testing any model
+- ⚠️ **ALWAYS validate models first**: Use the discovery endpoint (`/generate/v1/models` or `/generate/image/models`) before testing any model
 - ❌ **Never test undocumented models**: Only use model names that appear in the discovery endpoint response
 - ✅ **Workflow**: List models → Pick from list → Test
 
